@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  exam-seating-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exam_scheduler_app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./input:/app/input
+      - ./output:/app/output
+      - ./photos:/app/photos
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_MODE_UI=${APP_MODE_UI:-false}
+      - LAYOUT_TYPE=${LAYOUT_TYPE:-dense}
+      - SEAT_BUFFER=${SEAT_BUFFER:-5}
+      - EXPORT_PDF=${EXPORT_PDF:-true}
+    command: >
+      sh -c "
+      if [ \"$$APP_MODE_UI\" = \"true\" ]; then
+        streamlit run web_interface.py;
+      else
+        python exam_scheduler.py $$LAYOUT_TYPE $$SEAT_BUFFER;
+        fi;
+        echo '✅ Processing complete! Check ./output directory';
+      fi
+      "
